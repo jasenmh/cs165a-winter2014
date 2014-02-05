@@ -206,6 +206,8 @@ def Main():
   else:
     dist = nnode.Man2DistFromGoal()
   nnode.h = dist
+  if PDEBUG:
+    print "-pushing node with g=%d" % (nnode.g)
   q.push(nnode, nnode.g)
 
   # A* loop
@@ -259,8 +261,10 @@ def Main():
         dist = nnode.ManDistFromGoal()
       else:
         dist = nnode.Man2DistFromGoal()
-      nnode.h = dist
-      nnode.g = nnode.f + dist
+      cnode.h = dist
+      cnode.g = cnode.f + dist
+      if PDEBUG:
+        print "-pushing node with g=%d" % (cnode.g)
       q.push(cnode, cnode.g)
 
   # stop timer
@@ -276,9 +280,9 @@ def Main():
   tot_time = stop_time - start_time
 
   #if tot_time < 1:
-  print "%f seconds" % (tot_time)
+  #  print "%f seconds" % (tot_time)
   #else:
-  #  print "%d seconds" % (int(tot_time))
+  print "%d seconds" % (int(tot_time))
 
   if PDEBUG:
     print "%d nodes explored" % (len(q._queue))
