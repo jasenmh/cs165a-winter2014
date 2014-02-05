@@ -53,6 +53,42 @@ class Anode:
 
     return dist
 
+  def Man2DistFromGoal(self):
+    dist = 0
+    for i in range(len(self.state)):
+      if self.state[i] != i:
+        tmpcell = self.state[i]
+        if tmpcell == -1:
+          tmpcell = 8
+        sr = i / self.dim
+        sc = i % self.dim
+        dr = tmpcell / self.dim
+        dc = tmpcell % self.dim
+
+        dist += int(math.fabs(dc - sc) + math.fabs(dr - sr))
+
+        if dist != 1:
+          dist = dist * 2
+
+    return dist
+
+  def EucDistFromGoal(self):
+    dist = 0
+    for i in range(len(self.state)):
+      if self.state[i] != i:
+        tmpcell = self.state[i]
+        if tmpcell == -1:
+          tmpcell = 8
+        sr = i / self.dim
+        sc = i % self.dim
+        dr = tmpcell / self.dim
+        dc = tmpcell % self.dim
+
+        #dist += int(math.fabs(dc - sc) + math.fabs(dr - sr))
+        dist += math.sqrt(math.pow((dc-sc), 2) + math.pow((dr-sr), 2))
+
+    return dist
+
   def GenerateMoves(self):
     moves = []
     xcell = self.state.index(-1)
@@ -145,30 +181,52 @@ def readInput():
 ##### Main function #####
 
 def Main():
+  TIMELIMIT = 1800  # 30 minutes
+  PDEBUG = True
+  moditer = 0
+  USEEUCDIST = True
+  USEMANDIST = False
+  explored = {}
   found = False
   q = PriorityQueue()
 
   initState = readInput()
-  #printState(initState)
 
   # start timer
   start_time = timeit.default_timer()
 
-  # wrap init state in a node, set to head, nnode
+  # wrap init state in a node, set nnode
   nnode = Anode()
   nnode.SetState(initState)
   q.push(nnode, nnode.g)
 
-  # is init state a solution?
-  if nnode.ManDistFromGoal() == 0:
-    found = True
-
   # A* loop
   while found == False:
+
+    moditer = (moditer + 1) % 5000
+    if moditer == 0:
+      if timeit.default_timer() - start_time > TIMELIMIT:
+        if PDEBUG:
+          print "Time limit exceeded"
+        break
+      if PDEBUG:
+        print "%d explored states in memory" % (len(q._queue))
 
     nnode = q.pop()
     if nnode == 0: # empty list
       break
+
+    # is new state solution?
+    if USEEUCDIST:
+      dist = nnode.EucDistFromGoal()
+    elif USEMANDIST:
+      dist = nnode.ManDistFromGoal()
+    else:
+      dist = nnode.Man2DistFromGoal()
+    nnode.g = nnode.f + dist
+    if dist == 0.0:
+      found = True
+      continue
 
     # generate valid moves from current state
     moves = nnode.GenerateMoves()
@@ -188,14 +246,10 @@ def Main():
 
       # generate next state based on move
       cnode.GenerateNextState()
-
-      # is new state solution?
-      dist = cnode.ManDistFromGoal()
-      cnode.g = cnode.f + dist
-      if dist == 0:
-        found = True
-        nnode = cnode
+      ckey = ''.join(map(str, cnode.state))
+      if explored.has_key(ckey):
         continue
+      explored[ckey] = 1
 
       # insert new state into list
       q.push(cnode, cnode.g)
@@ -209,10 +263,14 @@ def Main():
 
   # print time
   tot_time = stop_time - start_time
-  if tot_time< 1:
-    print "%f seconds" % (tot_time)
-  else:
-    print "%d seconds" % (int(tot_time))
+
+  #if tot_time < 1:
+  print "%f seconds" % (tot_time)
+  #else:
+  #  print "%d seconds" % (int(tot_time))
+
+  if PDEBUG:
+    print "%d nodes explored" % (len(q._queue))
 
 if __name__ == '__main__':
   Main()

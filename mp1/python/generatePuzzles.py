@@ -1,21 +1,19 @@
 import random
 from puzzle import Anode
 
-MAXDIM = 13
-MAXMOVES = 21
-MAXITERS = 5
+MAXDIM = 5
+MAXMOVES = 4
+MAXITERS = 1
 
-griddim = 3
+griddim = 4
 while griddim < MAXDIM:
 
-#  print "Grid size %d" % (griddim)
-  movecnt = 5
+  movecnt = 3
   while movecnt < MAXMOVES:
 
-#    print " Move count %d" % (movecnt)
     iters = 0
     while iters < MAXITERS:
-#      print "  Iteration %d" % (iters)
+      
       state = range(griddim*griddim)
       state[(griddim*griddim)-1] = -1
       nn = Anode()
@@ -24,10 +22,8 @@ while griddim < MAXDIM:
       sol = []
 
       while i < movecnt:
-#        nn.PrintState()
-        moves = nn.GenerateMoves()
 
-#        print "Valid moves: %s" % (''.join(moves))
+        moves = nn.GenerateMoves()
 
         if len(moves) == 0:
           continue
@@ -45,7 +41,8 @@ while griddim < MAXDIM:
       sfile.close()
       iters += 1
 
-    movecnt = movecnt * 2
+    #movecnt = movecnt * 2
+    movecnt += 1
 
   griddim += 2
 
