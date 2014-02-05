@@ -2,13 +2,13 @@ import random
 from puzzle import Anode
 
 MAXDIM = 5
-MAXMOVES = 4
-MAXITERS = 1
+MAXMOVES = 51
+MAXITERS = 6
 
-griddim = 4
+griddim = 4 
 while griddim < MAXDIM:
 
-  movecnt = 3
+  movecnt = 50 
   while movecnt < MAXMOVES:
 
     iters = 0

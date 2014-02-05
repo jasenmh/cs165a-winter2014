@@ -3,6 +3,8 @@ import math
 import sys
 import timeit
 
+CLDEBUG = 0
+
 ##### class PriorityQueue #####
 
 class PriorityQueue:
@@ -44,13 +46,16 @@ class Anode:
       if self.state[i] != i:
         tmpcell = self.state[i]
         if tmpcell == -1:
-          tmpcell = 8
+          tmpcell = (self.dim * self.dim) - 1
         sr = i / self.dim
         sc = i % self.dim
         dr = tmpcell / self.dim
         dc = tmpcell % self.dim
 
-        dist += int(math.fabs(dc - sc) + math.fabs(dr - sr))
+        celldist = int(math.fabs(dc -sc) + math.fabs(dr - sr))
+        if CLDEBUG and celldist != 0:
+          print "-cell %d has distance %d" % (i, celldist)
+        dist += celldist
 
     return dist
 
@@ -60,7 +65,7 @@ class Anode:
       if self.state[i] != i:
         tmpcell = self.state[i]
         if tmpcell == -1:
-          tmpcell = 8
+          tmpcell = (self.dim * self.dim) - 1
         sr = i / self.dim
         sc = i % self.dim
         dr = tmpcell / self.dim
@@ -79,7 +84,7 @@ class Anode:
       if self.state[i] != i:
         tmpcell = self.state[i]
         if tmpcell == -1:
-          tmpcell = 8
+          tmpcell = (self.dim * self.dim) - 1
         sr = i / self.dim
         sc = i % self.dim
         dr = tmpcell / self.dim
@@ -185,8 +190,8 @@ def Main():
   TIMELIMIT = 1800  # 30 minutes
   PDEBUG = True
   moditer = 0
-  USEEUCDIST = False
-  USEMANDIST = True
+  USEEUCDIST = True
+  USEMANDIST = False
   explored = {}
   found = False
   q = PriorityQueue()
@@ -222,7 +227,7 @@ def Main():
       if PDEBUG:
         print "%d explored states in memory" % (len(q._queue))
 
-# do I need to store the last node?
+# do I need to save old node?
     nnode = q.pop()
     if nnode == 0: # empty list
       break
