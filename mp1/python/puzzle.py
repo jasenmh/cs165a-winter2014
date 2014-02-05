@@ -3,6 +3,8 @@ import math
 import sys
 import timeit
 
+CLDEBUG = 0
+
 ##### class PriorityQueue #####
 
 class PriorityQueue:
@@ -29,6 +31,7 @@ class Anode:
     self.dim = 0
     self.f = 0
     self.g = 99999
+    self.h = 99999
     self.lastmove = 'x'
     self.parent = 0
     self.next_node = 0
@@ -43,13 +46,16 @@ class Anode:
       if self.state[i] != i:
         tmpcell = self.state[i]
         if tmpcell == -1:
-          tmpcell = 8
+          tmpcell = (self.dim * self.dim) - 1
         sr = i / self.dim
         sc = i % self.dim
         dr = tmpcell / self.dim
         dc = tmpcell % self.dim
 
-        dist += int(math.fabs(dc - sc) + math.fabs(dr - sr))
+        celldist = int(math.fabs(dc -sc) + math.fabs(dr - sr))
+        if CLDEBUG and celldist != 0:
+          print "-cell %d has distance %d" % (i, celldist)
+        dist += celldist
 
     return dist
 
@@ -59,7 +65,7 @@ class Anode:
       if self.state[i] != i:
         tmpcell = self.state[i]
         if tmpcell == -1:
-          tmpcell = 8
+          tmpcell = (self.dim * self.dim) - 1
         sr = i / self.dim
         sc = i % self.dim
         dr = tmpcell / self.dim
@@ -78,7 +84,7 @@ class Anode:
       if self.state[i] != i:
         tmpcell = self.state[i]
         if tmpcell == -1:
-          tmpcell = 8
+          tmpcell = (self.dim * self.dim) - 1
         sr = i / self.dim
         sc = i % self.dim
         dr = tmpcell / self.dim
@@ -198,8 +204,15 @@ def Main():
   # wrap init state in a node, set nnode
   nnode = Anode()
   nnode.SetState(initState)
-  if PDEBUG:
-    print "-pushing node with g=%d" % (nnode.g)
+  if USEEUCDIST:
+    dist = nnode.EucDistFromGoal()
+  elif USEMANDIST:
+    dist = nnode.ManDistFromGoal()
+  else:
+    dist = nnode.Man2DistFromGoal()
+  nnode.h = dist
+  #if PDEBUG:
+  #  print "-pushing node with g=%d" % (nnode.g)
   q.push(nnode, nnode.g)
 
   # A* loop
@@ -214,19 +227,13 @@ def Main():
       if PDEBUG:
         print "%d explored states in memory" % (len(q._queue))
 
+# do I need to save old node?
     nnode = q.pop()
     if nnode == 0: # empty list
       break
 
     # is new state solution?
-    if USEEUCDIST:
-      dist = nnode.EucDistFromGoal()
-    elif USEMANDIST:
-      dist = nnode.ManDistFromGoal()
-    else:
-      dist = nnode.Man2DistFromGoal()
-    nnode.g = nnode.f + dist
-    if dist == 0.0:
+    if nnode.h == 0.0:
       found = True
       continue
 
@@ -254,8 +261,16 @@ def Main():
       explored[ckey] = 1
 
       # insert new state into list
-      if PDEBUG:
-        print "-pusing node with g=%d" % (cnode.g)
+      if USEEUCDIST:
+        dist = cnode.EucDistFromGoal()
+      elif USEMANDIST:
+        dist = cnode.ManDistFromGoal()
+      else:
+        dist = cnode.Man2DistFromGoal()
+      cnode.h = dist
+      cnode.g = cnode.f + dist
+      #if PDEBUG:
+      #  print "-pushing node with g=%d" % (cnode.g)
       q.push(cnode, cnode.g)
 
   # stop timer
@@ -264,6 +279,8 @@ def Main():
   # print solution if found
   if found == True:
     nnode.PrintMoves(True)
+  elif PDEBUG:
+    print "No solution found"
 
   # print time
   tot_time = stop_time - start_time
