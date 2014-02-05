@@ -29,6 +29,7 @@ class Anode:
     self.dim = 0
     self.f = 0
     self.g = 99999
+    self.h = 99999
     self.lastmove = 'x'
     self.parent = 0
     self.next_node = 0
@@ -184,8 +185,8 @@ def Main():
   TIMELIMIT = 1800  # 30 minutes
   PDEBUG = True
   moditer = 0
-  USEEUCDIST = True
-  USEMANDIST = False
+  USEEUCDIST = False
+  USEMANDIST = True
   explored = {}
   found = False
   q = PriorityQueue()
@@ -198,6 +199,13 @@ def Main():
   # wrap init state in a node, set nnode
   nnode = Anode()
   nnode.SetState(initState)
+  if USEEUCDIST:
+    dist = nnode.EucDistFromGoal()
+  elif USEMANDIST:
+    dist = nnode.ManDistFromGoal()
+  else:
+    dist = nnode.Man2DistFromGoal()
+  nnode.h = dist
   q.push(nnode, nnode.g)
 
   # A* loop
@@ -217,14 +225,7 @@ def Main():
       break
 
     # is new state solution?
-    if USEEUCDIST:
-      dist = nnode.EucDistFromGoal()
-    elif USEMANDIST:
-      dist = nnode.ManDistFromGoal()
-    else:
-      dist = nnode.Man2DistFromGoal()
-    nnode.g = nnode.f + dist
-    if dist == 0.0:
+    if nnode.h == 0.0:
       found = True
       continue
 
@@ -252,6 +253,14 @@ def Main():
       explored[ckey] = 1
 
       # insert new state into list
+      if USEEUCDIST:
+        dist = nnode.EucDistFromGoal()
+      elif USEMANDIST:
+        dist = nnode.ManDistFromGoal()
+      else:
+        dist = nnode.Man2DistFromGoal()
+      nnode.h = dist
+      nnode.g = nnode.f + dist
       q.push(cnode, cnode.g)
 
   # stop timer
@@ -260,6 +269,8 @@ def Main():
   # print solution if found
   if found == True:
     nnode.PrintMoves(True)
+  elif PDEBUG:
+    print "No solution found"
 
   # print time
   tot_time = stop_time - start_time
