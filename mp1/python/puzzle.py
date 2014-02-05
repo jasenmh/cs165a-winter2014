@@ -206,8 +206,8 @@ def Main():
   else:
     dist = nnode.Man2DistFromGoal()
   nnode.h = dist
-  if PDEBUG:
-    print "-pushing node with g=%d" % (nnode.g)
+  #if PDEBUG:
+  #  print "-pushing node with g=%d" % (nnode.g)
   q.push(nnode, nnode.g)
 
   # A* loop
@@ -222,6 +222,7 @@ def Main():
       if PDEBUG:
         print "%d explored states in memory" % (len(q._queue))
 
+# do I need to store the last node?
     nnode = q.pop()
     if nnode == 0: # empty list
       break
@@ -256,15 +257,15 @@ def Main():
 
       # insert new state into list
       if USEEUCDIST:
-        dist = nnode.EucDistFromGoal()
+        dist = cnode.EucDistFromGoal()
       elif USEMANDIST:
-        dist = nnode.ManDistFromGoal()
+        dist = cnode.ManDistFromGoal()
       else:
-        dist = nnode.Man2DistFromGoal()
+        dist = cnode.Man2DistFromGoal()
       cnode.h = dist
       cnode.g = cnode.f + dist
-      if PDEBUG:
-        print "-pushing node with g=%d" % (cnode.g)
+      #if PDEBUG:
+      #  print "-pushing node with g=%d" % (cnode.g)
       q.push(cnode, cnode.g)
 
   # stop timer
