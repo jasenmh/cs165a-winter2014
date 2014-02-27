@@ -188,7 +188,7 @@ def readInput():
 
 def Main():
   TIMELIMIT = 1800  # 30 minutes
-  PDEBUG = True
+  PDEBUG = False
   moditer = 0
   USEEUCDIST = True
   USEMANDIST = False

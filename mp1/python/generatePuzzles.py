@@ -1,17 +1,17 @@
 import random
 from puzzle import Anode
 
-MAXDIM = 5
+MAXDIM = 4
 MAXMOVES = 51
 MAXITERS = 6
 
-griddim = 4 
+griddim = 3 
 while griddim < MAXDIM:
 
   movecnt = 50 
   while movecnt < MAXMOVES:
 
-    iters = 0
+    iters = 1
     while iters < MAXITERS:
       
       state = range(griddim*griddim)

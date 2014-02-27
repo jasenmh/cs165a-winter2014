@@ -1,0 +1,8 @@
+My program implements a modified A* algorithm with a hash table that stores
+visited nodes. It also uses Euclidean distance instead of Manhattan distance
+in its heuristic.
+
+It is complete, and should work for any nXn puzzle to the point that the
+machine runs out of memory or the person sitting at it in CSIL turns it off.
+Note in the Runfile that it reads from STDIN and writes to STDOUT so file
+redirection is necessary.
