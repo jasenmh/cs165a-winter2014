@@ -19,7 +19,11 @@ count = 0
 
 for line in sys.stdin:
 
-  if len(line) < 4:
+  count = (count + 1) % 100
+  if count == 0:
+    sys.stdout.write(".")
+
+  if len(line) < 3:
     continue
 
   words = line.split()
@@ -39,4 +43,4 @@ for line in sys.stdin:
 tf.close()
 cf.close()
 
-print "Done."
+print "\nDone."
