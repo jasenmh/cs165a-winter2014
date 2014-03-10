@@ -4,6 +4,7 @@ import math
 
 VERBOSE = True
 WEIGHTWORDS = True
+DIGITCOUNT = True
 
 ##### class ClassModel #####
 
@@ -18,6 +19,8 @@ class ClassModel:
     self.smsHam = 0
     self.pSpam = 0.0
     self.pHam = 0.0
+    self.spamDigits = 0 # avg num digits in spam messages
+    self.hamDigits = 0 # avg num digits in ham messages
 
   def wordInClass(self, word, c):
     #self.wordTotal += 1
@@ -59,6 +62,9 @@ class ClassModel:
     fspam = float(self.wordList[word].inSpam)
     fham = float(self.wordList[word].inHam)
 
+    printf "%f / %f, %f : %f / %f, %f" % (0, 0, 0, 0, 0, 0)
+#(fspam + 1, self.spamWords + self.wordTotal, math.log((fspam + 1) / (self.spamWords + self.wordTotal)), fham + 1, self.hamWords + self.wordTotal, math.log((fham + 1) / (self.hamWords + self.wordTotal))
+
     return ( math.log((fspam + 1) / (self.spamWords + self.wordTotal)), math.log((fham + 1) / (self.hamWords + self.wordTotal)) ) # smoothed, guard against 0s
     #return ( fspam/self.spamWords, fham/self.hamWords )
     #return ( fspam/self.smsSpam, fham/self.smsHam )
@@ -83,11 +89,22 @@ class ClassModel:
       for word in wordList:
         self.wordInClass(word, smsClass)
 
-    # apply weights to words
+      # count digits in message
+      messList = list(line)
+      messList = filter(lambda x: x in '1234567890', messList)
+      digits = len(messList)
+      if smsClass == 'ham':
+        self.hamDigits += 1
+      else:
+        self.spamDigits += 1
 
     # calculate p(C=ci)
     self.pSpam = float(self.smsSpam) / self.smsTotal
     self.pHam = float(self.smsHam) / self.smsTotal
+
+    # calc digit averages
+    self.hamDigits = float(self.hamDigits) / self.smsHam
+    self.spamDigits = float(self.spamDigits) / self.smsSpam
 
   def classify(self, classList, withCheck):
     classedSms = 0
@@ -127,8 +144,20 @@ class ClassModel:
       if wProbs[1] != 0:
         probs[1] += wProbs[1]
 
+    print "words: %f %f" % (probs[0], probs[1])
+
+    # consider digit in message
+    messList = list("".join(smsList))
+    messList = filter(lambda x: x in '1234567890', messList)
+    digits = len(messList)
+    if digits > 0:
+      probs[0] += self.spamDigits
+      probs[1] += self.hamDigits
+      print "digits: %f %f" % (probs[0], probs[1])
+
     probs[0] += self.pSpam
     probs[1] += self.pHam
+    print "class: %f %f" % (probs[0], probs[1])
 
     if probs[0] > probs[1]:
       return 'spam'
