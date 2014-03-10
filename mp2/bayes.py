@@ -1,5 +1,6 @@
 import string
 import sys
+import math
 
 VERBOSE = True
 WEIGHTWORDS = True
@@ -52,12 +53,13 @@ class ClassModel:
   def probWord(self, word):
     # if word is not in training data, return 1s which will not affect P()
     if word not in self.wordList:
-      return (1, 1)
+      #return (1, 1)
+      return (0, 0) # adding logs, not multiplying Ps
 
     fspam = float(self.wordList[word].inSpam)
     fham = float(self.wordList[word].inHam)
 
-    return ( (fspam + 1) / (self.spamWords + self.wordTotal), (fham + 1) / (self.hamWords + self.wordTotal) ) # smoothed, guard against 0s
+    return ( math.log((fspam + 1) / (self.spamWords + self.wordTotal)), math.log((fham + 1) / (self.hamWords + self.wordTotal)) ) # smoothed, guard against 0s
     #return ( fspam/self.spamWords, fham/self.hamWords )
     #return ( fspam/self.smsSpam, fham/self.smsHam )
 
@@ -115,17 +117,18 @@ class ClassModel:
     return acc
 
   def classifySms(self, smsList):
-    probs = [1.0, 1.0]  # spam, ham
+    #probs = [1.0, 1.0]  # spam, ham
+    probs = [0.0, 0.0] # adding log(P), start at 0
 
     for word in smsList:
       wProbs = self.probWord(word)
       if wProbs[0] != 0:
-        probs[0] *= wProbs[0]
+        probs[0] += wProbs[0]
       if wProbs[1] != 0:
-        probs[1] *= wProbs[1]
+        probs[1] += wProbs[1]
 
-    probs[0] *= self.pSpam
-    probs[1] *= self.pHam
+    probs[0] += self.pSpam
+    probs[1] += self.pHam
 
     if probs[0] > probs[1]:
       return 'spam'
