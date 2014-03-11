@@ -80,7 +80,8 @@ class ClassModel:
       else:
         self.incrSmsSpam()
 
-      for word in wordList:
+      for i in range(len(wordList) - 1):
+        word = " ".join(wordList[i:i+2])
         self.wordInClass(word, smsClass)
 
     # apply weights to words
@@ -120,7 +121,8 @@ class ClassModel:
     #probs = [1.0, 1.0]  # spam, ham
     probs = [0.0, 0.0] # adding log(P), start at 0
 
-    for word in smsList:
+    for i in range(len(smsList) - 1):
+      word = " ".join(smsList[i:i+2])
       wProbs = self.probWord(word)
       if wProbs[0] != 0:
         probs[0] += wProbs[0]
