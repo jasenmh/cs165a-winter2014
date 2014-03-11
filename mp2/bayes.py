@@ -1,9 +1,13 @@
+# bayes.py
+# Jasen Hall
+# CS 165A, Winter 2014
+# UC Santa Barbara
+
 import string
 import sys
 import math
 
-VERBOSE = True
-WEIGHTWORDS = True
+VERBOSE = False
 
 ##### class ClassModel #####
 
@@ -20,8 +24,6 @@ class ClassModel:
     self.pHam = 0.0
 
   def wordInClass(self, word, c):
-    #self.wordTotal += 1
-
     # add word to list if new
     if word not in self.wordList:
       self.wordTotal += 1
@@ -53,24 +55,17 @@ class ClassModel:
   def probWord(self, word):
     # if word is not in training data, return 1s which will not affect P()
     if word not in self.wordList:
-      #return (1, 1)
       return (0, 0) # adding logs, not multiplying Ps
 
     fspam = float(self.wordList[word].inSpam)
     fham = float(self.wordList[word].inHam)
 
     return ( math.log((fspam + 1) / (self.spamWords + self.wordTotal)), math.log((fham + 1) / (self.hamWords + self.wordTotal)) ) # smoothed, guard against 0s
-    #return ( fspam/self.spamWords, fham/self.hamWords )
-    #return ( fspam/self.smsSpam, fham/self.smsHam )
 
   def trainModel(self, trainList):
-    count = 0
 
     # count occurrences of words in each class
     for line in trainList:
-      count = (count + 1) % 100
-      if VERBOSE and count == 0:
-        sys.stdout.write(".")
       words = line.split()
       smsClass = words[0]
       wordList = words[1:]
@@ -84,8 +79,6 @@ class ClassModel:
         word = " ".join(wordList[i:i+2])
         self.wordInClass(word, smsClass)
 
-    # apply weights to words
-
     # calculate p(C=ci)
     self.pSpam = float(self.smsSpam) / self.smsTotal
     self.pHam = float(self.smsHam) / self.smsTotal
@@ -94,12 +87,9 @@ class ClassModel:
     classedSms = 0
     correctSms = 0
     pf = open("predictions.txt", "w")
-    count = 0
+
     # classify each SMS and write class to file
     for sms in classList:
-      count = (count + 1) % 100
-      if VERBOSE and count == 0:
-        sys.stdout.write(".")
       classedSms += 1
       words = sms.split()
       if withCheck:
@@ -118,7 +108,6 @@ class ClassModel:
     return acc
 
   def classifySms(self, smsList):
-    #probs = [1.0, 1.0]  # spam, ham
     probs = [0.0, 0.0] # adding log(P), start at 0
 
     for i in range(len(smsList) - 1):
@@ -153,25 +142,17 @@ class WordInfo:
 ##### Utility functions #####
 
 table = string.maketrans("", "")
-#punc_table = string.maketrans(string.punctuation, ' '*len(string.punctuation))
 
 def removePunctuation(s):
   return s.translate(table, string.punctuation)
-  #return s.translate(punc_table)
 
 def readDataFromFile(fn):
   inFile = open(fn, "r")
-  count = 0
   inList = []
 
   for line in inFile:
-    count = (count + 1) % 100
-    if VERBOSE and count == 0:
-      sys.stdout.write(".")
-
     if len(line) > 3:
       addLine = removePunctuation(line)
-      #print "* read: %s" % ( addLine )
       inList += [ addLine ]
 
   return inList
@@ -198,34 +179,18 @@ def Main():
       checkAcc = False
 
   # read in the training data
-  if VERBOSE:
-    sys.stdout.write("Reading training file %s" % (trainFile))
   trainList = readDataFromFile(trainFile)
-  if VERBOSE:
-    print ".\nRead %d training messages" % (len(trainList))
 
   cm = ClassModel()
 
   # train the model
-  if VERBOSE:
-    sys.stdout.write("Training model")
   cm.trainModel(trainList)
-  if VERBOSE:
-    print "."
 
   # read in the test data
-  if VERBOSE:
-    sys.stdout.write("Reading test file %s" % (testFile))
   testList = readDataFromFile(testFile)
-  if VERBOSE:
-    print ".\nRead %d test messages" % (len(testList))
 
   # test data classification
-  if VERBOSE:
-    sys.stdout.write("Classifying SMS")
   accuracy = cm.classify(testList, checkAcc)
-  if VERBOSE:
-    print "."
 
   # report accuracy
   if VERBOSE:
