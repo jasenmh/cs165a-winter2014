@@ -151,9 +151,11 @@ class WordInfo:
 ##### Utility functions #####
 
 table = string.maketrans("", "")
+#punc_table = string.maketrans(string.punctuation, ' '*len(string.punctuation))
 
 def removePunctuation(s):
   return s.translate(table, string.punctuation)
+  #return s.translate(punc_table)
 
 def readDataFromFile(fn):
   inFile = open(fn, "r")
@@ -166,7 +168,9 @@ def readDataFromFile(fn):
       sys.stdout.write(".")
 
     if len(line) > 3:
-      inList += [ removePunctuation(line) ]
+      addLine = removePunctuation(line)
+      #print "* read: %s" % ( addLine )
+      inList += [ addLine ]
 
   return inList
 
