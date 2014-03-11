@@ -32,13 +32,15 @@ for line in sys.stdin:
     if random.random() < trainRatio:
       tf.write(line+"\n")
     else:
-      cf.write(line+"\n")
+      wordline = " ".join(words[1:])
+      cf.write(wordline+"\n")
       #cf.write(" ".join(words[1:])) # generate REAL classify data
   else: # sms is spam and we have a spamTrainRatio
     if random.random() < spamTrainRatio:
       tf.write(line+"\n")
     else:
-      cf.write(line+"\n")
+      wordline = " ".join(words[1:])
+      cf.write(wordline+"\n")
 
 tf.close()
 cf.close()

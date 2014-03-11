@@ -62,10 +62,9 @@ class ClassModel:
     fspam = float(self.wordList[word].inSpam)
     fham = float(self.wordList[word].inHam)
 
-    printf "%f / %f, %f : %f / %f, %f" % (0, 0, 0, 0, 0, 0)
-#(fspam + 1, self.spamWords + self.wordTotal, math.log((fspam + 1) / (self.spamWords + self.wordTotal)), fham + 1, self.hamWords + self.wordTotal, math.log((fham + 1) / (self.hamWords + self.wordTotal))
+    #print "%f, %f, %f : %f, %f, %f" % ( (fspam + 1), (self.spamWords + self.wordTotal), math.log(((fspam + 1) / (self.spamWords + self.wordTotal))+1), (fham + 1), (self.hamWords + self.wordTotal), math.log(((fham + 1) / (self.hamWords + self.wordTotal))+1) )
 
-    return ( math.log((fspam + 1) / (self.spamWords + self.wordTotal)), math.log((fham + 1) / (self.hamWords + self.wordTotal)) ) # smoothed, guard against 0s
+    return ( math.log(((fspam + 1) / (self.spamWords + self.wordTotal))+1), math.log(((fham + 1) / (self.hamWords + self.wordTotal))+1) )
     #return ( fspam/self.spamWords, fham/self.hamWords )
     #return ( fspam/self.smsSpam, fham/self.smsHam )
 
@@ -74,6 +73,9 @@ class ClassModel:
 
     # count occurrences of words in each class
     for line in trainList:
+
+      print "* train: %s" % (line)
+      line = line.lower()
       count = (count + 1) % 100
       if VERBOSE and count == 0:
         sys.stdout.write(".")
@@ -118,13 +120,16 @@ class ClassModel:
         sys.stdout.write(".")
       classedSms += 1
       words = sms.split()
+
+      print "* class: %s" % (sms)
+
       if withCheck:
         knownClass = words[0]
-        predClass = self.classifySms(words[1:])
+        predClass = self.classifySms(" ".join(words[1:]))
         if knownClass == predClass:
           correctSms += 1
       else:
-        predClass = self.classifySms(words)
+        predClass = self.classifySms(sms)
 
       pf.write("%s\n" % (predClass))
 
@@ -133,9 +138,13 @@ class ClassModel:
 
     return acc
 
-  def classifySms(self, smsList):
+  def classifySms(self, sms):
     #probs = [1.0, 1.0]  # spam, ham
     probs = [0.0, 0.0] # adding log(P), start at 0
+
+    newsms = removeDigits(sms)
+    newsms = newsms.lower()
+    smsList = newsms.split()
 
     for word in smsList:
       wProbs = self.probWord(word)
@@ -144,10 +153,10 @@ class ClassModel:
       if wProbs[1] != 0:
         probs[1] += wProbs[1]
 
-    print "words: %f %f" % (probs[0], probs[1])
+    print "class: %f %f" % (probs[0], probs[1])
 
     # consider digit in message
-    messList = list("".join(smsList))
+    messList = list(newsms) #"".join(smsList))
     messList = filter(lambda x: x in '1234567890', messList)
     digits = len(messList)
     if digits > 0:
@@ -155,9 +164,9 @@ class ClassModel:
       probs[1] += self.hamDigits
       print "digits: %f %f" % (probs[0], probs[1])
 
-    probs[0] += self.pSpam
-    probs[1] += self.pHam
-    print "class: %f %f" % (probs[0], probs[1])
+    #probs[0] += self.pSpam
+    #probs[1] += self.pHam
+    #print "class: %f %f" % (probs[0], probs[1])
 
     if probs[0] > probs[1]:
       return 'spam'
@@ -179,10 +188,14 @@ class WordInfo:
 
 ##### Utility functions #####
 
-table = string.maketrans("", "")
+punc_table = string.maketrans(string.punctuation, ' '*len(string.punctuation))
+digit_table = string.maketrans(string.digits, ' '*len(string.digits))
 
 def removePunctuation(s):
-  return s.translate(table, string.punctuation)
+  return s.translate(punc_table)
+
+def removeDigits(s):
+  return s.translate(digit_table)
 
 def readDataFromFile(fn):
   inFile = open(fn, "r")
