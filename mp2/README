@@ -1,0 +1,22 @@
+Jasen Hall
+8408742
+
+I use a Naive Bayes Classifier to predict whether an SMS message is
+spam or ham. To predict the likelihood of the catagory of a message
+I am finding the logarithm of the conditional probability instead of
+the product of the probabilities so that I don't lose precision as
+the product gets smaller and smaller.
+
+Additionally, I am training and classifying on pairs of adjacent words
+instead of individual words. After changing my classifier to look at
+pairs of words, the accuracy of the predictions increased by about 5%.
+
+I tried several other augmentations. First, I noticed that digits
+appeared in spam more often in ham so I added the presence of digits
+in the message as a feature. This actually decreased the accuracy of
+the predictions. I tried weighting words using TF-IDF but this tended
+to push all predictions to ham. I also played with stripping digits and
+punctuation from messages before training and classification. Stripping
+digits poorly affected the accuracy of the prediction. Replacing
+punctuation with spaces also had a poor effect on the accuracy but
+stripping it increased the accuracy.
